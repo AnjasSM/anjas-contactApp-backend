@@ -13,7 +13,7 @@ app.listen(port, () => {
 
 //get ui from index.html
 app.get('/', (req, res, next) => {
-  res.sendfile('./public/index.html');
+  res.send(`Backend Running on Port : ${port}`);
 });
 
 //get all contacts database
@@ -24,10 +24,7 @@ app.get('/contacts', (req,res,next) => {
       res.status(400).json({'error':'err.message'});
       return;
     }
-    res.json({
-      'message': 'success',
-      'data':data
-    })
+    res.json({'data':data})
   });
 });
 
