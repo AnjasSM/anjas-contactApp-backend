@@ -1,9 +1,15 @@
-const express = require('express');
-const app = express();
-const db = require('./component/db');
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({extended:false}));
-app.use(bodyParser.json());
+const express = require("express")
+const app = express()
+const db = require("./component/db")
+const bodyParser = require("body-parser")
+app.use(bodyParser.urlencoded({extended:false}))
+app.use(bodyParser.json())
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  res.header( "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
+  next()
+})
 
 //port declaration
 const port = 4000
@@ -11,92 +17,70 @@ app.listen(port, () => {
   console.log(`Server Running On port ${port}`);
 });
 
-//get ui from index.html
+//homepage
 app.get('/', (req, res, next) => {
   res.send(`Backend Running on Port : ${port}`);
 });
 
-//get all contacts database
-app.get('/contacts', (req,res,next) => {
-  const sql = 'SELECT * FROM contacts';
-  db.all(sql, (err, data) => {
-    if(err) {
-      res.status(400).json({'error':'err.message'});
-      return;
-    }
-    res.json({'data':data})
-  });
-});
 
-//get single contact by id
-app.get('/contacts/:id', (req, res, next) => {
-  const sql = 'SELECt * FROM contacts WHERE id = ?';
-  const params = req.params.id;
 
-  db.get(sql,params, (err, data) => {
-    if(err) {
-      res.status(400).json({'error':'err.message'});
-      return;
-    }
-    res.json({
-      'message': 'success',
-      'data':data
-    })   
-  });
-});
+// get contact from database
+app.get("/contacts",(req,res,next) => {
 
-//add new contact to database
-app.post('/contacts', (req, res, next) => {
-  const sql = 'INSERT INTO contacts (name, phone, email, gender) VALUES (?, ?, ?, ?)';
-  const params = [req.body.name, req.body.phone, req.body.email, req.body.gender];
-
-  db.run(sql, params, (err, data) => {
-    if(err) {
-      res.status(400).json({'error':'err.message'});
-      return;
-    }
-    res.json({
-      'message': 'New Contact Added',
-      'data': data,
-      'id': this.lastID
+  const sql = 'select * from contacts'
+  db.all(sql, (err, data) => {  
+      if (err)  res.json({"error":err.message})
+ 
+      res.json(data)
     })
-  });
-});
+})
 
-//update contacts database
-app.put('/contacts/:id', (req, res, next) => {
-  const sql = `UPDATE contacts set 
-                name = ?,
-                phone = ?,
-                email = ?,
-                gender = ?,
-                WHERE id = ?`;
-  const params = [req.body.name, req.body.phone, req.body.email, req.body.gender, req.params.id];
+// get data by id from database
+app.get("/contacts/:id", (req,res,next) => {
+  const sql = "select * from contacts where id = ?"
+  const param = req.params.id
 
-  db.run(sql, params, (err, data) => {
-    if(err) {
-      res.status(400).json({'error':'err.message'});
-      return;
-    }
-    res.json({
-      'message': 'Contact Updated'
-    })
-  });
-});
+  db.get(sql,param, (err,data) => {
+      if(err) res.json({"error" : err.message})
+      res.json(data)
+  })
+})
 
-//delete contact from database use contact id
-app.delete('/contacts/:id', (req, res, next) => {
-  const sql = 'DELETE FROM contacts WHERE id = ?';
-  const params = req.params.id;
+//add data to database
+app.post("/contacts" , (req,res,next) => {
+  const sql = "insert into contacts(name,phone,email,gender) values(?,?,?,?)"
+  const params = [req.body.name,req.body.phone,req.body.email,req.body.gender]
 
-  db.run(sql, params, (err, result) => {
-    if(err) {
-      res.status(400).json({'error':'err.message'});
-      return;
-    }
-    res.json({
-      'message': 'Contact Deleted',
-      'changes': this.changes
-    });
-  });
-});
+  db.run(sql,params, (err,data) => {
+      if(err) res.json({"error" : err.message})
+      res.json({"message" : "data added"})
+  })
+})
+
+// delete 
+app.delete("/contacts/:id", (req,res,next) => {
+  const sql = "delete from contacts where id = ?"
+  const param = req.params.id
+
+  db.run(sql,param, (err,data) => {
+      if(err) res.json({"error" : err.message})
+      res.json({"message" : "data Deleted"})
+  })
+})
+
+//update data
+app.put("/contacts/:id", (req,res,next) => {
+  const sql =`update contacts set 
+      name = ?,
+      phone = ?, 
+      email = ?,
+      gender = ?
+      where id = ?`
+  const params = [req.body.name, req.body.phone, req.body.email,req.body.gender,req.params.id]
+
+  db.run(sql,params, (err,data) => {
+      if(err) res.json({"error" : err.message})
+      res.json({"message" : "data edited"})
+  })
+
+})
