@@ -24,7 +24,7 @@ app.get('/', (req, res, next) => {
 
 
 
-// get contact from database
+// get contacts from db
 app.get("/contacts",(req,res,next) => {
 
   const sql = 'select * from contacts'
@@ -35,7 +35,7 @@ app.get("/contacts",(req,res,next) => {
     })
 })
 
-// get data by id from database
+// get contact by id from db
 app.get("/contacts/:id", (req,res,next) => {
   const sql = "select * from contacts where id = ?"
   const param = req.params.id
@@ -46,29 +46,29 @@ app.get("/contacts/:id", (req,res,next) => {
   })
 })
 
-//add data to database
+//add contact to db
 app.post("/contacts" , (req,res,next) => {
   const sql = "insert into contacts(name,phone,email,gender) values(?,?,?,?)"
   const params = [req.body.name,req.body.phone,req.body.email,req.body.gender]
 
   db.run(sql,params, (err,data) => {
       if(err) res.json({"error" : err.message})
-      res.json({"message" : "data added"})
+      res.json({"message" : "contact added"})
   })
 })
 
-// delete 
+// delete contact from db
 app.delete("/contacts/:id", (req,res,next) => {
   const sql = "delete from contacts where id = ?"
   const param = req.params.id
 
   db.run(sql,param, (err,data) => {
       if(err) res.json({"error" : err.message})
-      res.json({"message" : "data Deleted"})
+      res.json({"message" : "contact Deleted"})
   })
 })
 
-//update data
+//update contact from db
 app.put("/contacts/:id", (req,res,next) => {
   const sql =`update contacts set 
       name = ?,
@@ -80,7 +80,88 @@ app.put("/contacts/:id", (req,res,next) => {
 
   db.run(sql,params, (err,data) => {
       if(err) res.json({"error" : err.message})
-      res.json({"message" : "data edited"})
+      res.json({"message" : "contact edited"})
+  })
+
+})
+
+// get contact by gender
+app.get("/contacts/gender/:value",(req,res,next) => {
+
+  const sql = 'select * from contacts where gender = ?'
+  const param = req.params.value
+  db.all(sql, param,  (err, data) => {  
+      if (err)  res.json({"error":err.message})
+      res.json(data)
+    })
+})
+
+//get contact by search value
+app.get("/contacts/search/:value", (req,res,next) => {
+  const sql = "select * from contacts where fullName like ? "
+  const param = "%" + req.params.value + "%"
+  db.all(sql, param,  (err, data) => {  
+      if (err)  res.json({"error":err.message})
+      res.json(data)
+    })
+})
+
+
+//get users from db
+app.get("/users", (req,res,next) => {
+  const sql = "select * from users"
+  db.all(sql, (err, data) => {  
+    if (err)  res.json({"error":err.message})
+
+    res.json(data)
+  })
+})
+
+// get user by id from db
+app.get("/users/:id", (req,res,next) => {
+  const sql = "select * from users where id = ?"
+  const param = req.params.id
+
+  db.get(sql,param, (err,data) => {
+      if(err) res.json({"error" : err.message})
+      res.json(data)
+  })
+})
+
+//add user to db
+app.post("/users", (req,res,next) => {
+  const sql = "insert into users(username,email,password) values(?,?,?)"
+  const params = [req.body.username, req.body.email, req.body.password]
+
+  db.run(sql,params, (err,data) => {
+    if(err) res.json({"error" : err.message})
+    res.json({"message" : "user added"})
+  })
+})
+
+//delete user from db
+app.delete("/users/:id", (req,res,next) => {
+  const sql = "delete from users where id = ?"
+  const param = req.params.id
+
+  db.rub(sql,param, (err,data) => {
+    if(err) res.json({"error" : err.message})
+    res.json({"message" : "user deleted"})
+  })
+})
+
+//update user from db
+app.put("/users/:id", (req,res,next) => {
+  const sql =`update users set 
+      username = ?, 
+      email = ?,
+      password = ?
+      where id = ?`
+  const params = [req.body.userName, req.body.email,req.body.password,req.params.id]
+
+  db.run(sql,params, (err,data) => {
+      if(err) res.json({"error" : err.message})
+      res.json({"message" : "user edited"})
   })
 
 })
